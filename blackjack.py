@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Text-based Blackjack
+# David Bianco
+# July 2014
+
 import random
 
 total_player_count = 2    # includes Dealer
@@ -15,6 +19,7 @@ class Player:
         self.pot = pot
         self.bet = 0
         self.hand = 0
+        self.cards = []
         self.action = ""
 
     def __getitem__(self, key):
@@ -22,6 +27,7 @@ class Player:
 
     def reset(self):
         self.hand = 0
+        self.cards = []
 
 class Deck:
     deck = []
@@ -37,7 +43,7 @@ class Deck:
         #random.shuffle(self.deck)
         if (debug): print self.deck
         self.deck.pop(0) # burn card
-        self.cards_in_deck = len(self.deck)
+        #self.cards_in_deck = len(self.deck)
 
     def shuffle(self):
         random.shuffle(self.deck)
@@ -48,17 +54,32 @@ class Deck:
 
     def deal_card(self, i):
         dealt_card = self.deck.pop(0)
+
         if dealt_card < 11:
             dealt_card_value = dealt_card
         elif dealt_card == 'A':
             dealt_card_value = 11
+
         else:
             dealt_card_value = 10
 
+        player[i].cards.append(dealt_card)
         player[i].hand += dealt_card_value
         print "%s's card: %s" % (player[i].name, dealt_card)
 
         return (dealt_card, dealt_card_value)
+
+class Hand:
+
+    def __init__(self):
+        self.reset()
+
+    def reset():
+        self.value = 0
+        self.cards = []
+        self.aces = 0
+        self.ten = 0
+
 
 class Card:
     def __init__(self, suit, face, value, color):
@@ -71,7 +92,7 @@ class Card:
 
 def rules():
     print "WELCOME TO BLACKJACK!"
-    print "Dealer must hit at 17 and below."
+    print "Dealer must hit at 16 and below."
     print "Blackjack pays 2:1, a win pays 1:1"
 
 def play_game():
@@ -117,6 +138,18 @@ def dealer_move(d):
         pass
     elif dealer_hand >= 22:
         print "BUST!"
+
+def evaluate_hand(i):
+    hand = player[i].hand
+    cards = player[i].cards
+    if hand >= 22:
+        if 'A' in cards:
+            player[i].hand -= 10
+            evaluate_hand(i)
+        else:
+            print "BUST!"
+    elif ((len(cards) == 2) and ('A' in cards) and ('J' in cards)):
+        pass
 
 
 def play_again():
