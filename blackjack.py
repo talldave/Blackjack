@@ -4,6 +4,7 @@ import random
 
 total_player_count = 2    # includes Dealer
 player = []
+debug = True
 
 class Player:
     position = -1
@@ -31,10 +32,10 @@ class Deck:
         ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
         self.deck = list(ranks * 4)
         self.deck *= total_deck_count
-        print self.deck
+        if (debug): print self.deck
         self.shuffle()
-        random.shuffle(self.deck)
-        print self.deck
+        #random.shuffle(self.deck)
+        if (debug): print self.deck
         self.deck.pop(0) # burn card
         self.cards_in_deck = len(self.deck)
 
@@ -45,7 +46,7 @@ class Deck:
     def count(self):
         return len(self.deck)
 
-    def deal_card(self):
+    def deal_card(self, i):
         dealt_card = self.deck.pop(0)
         if dealt_card < 11:
             dealt_card_value = dealt_card
@@ -53,6 +54,9 @@ class Deck:
             dealt_card_value = 11
         else:
             dealt_card_value = 10
+
+        player[i].hand += dealt_card_value
+        print "%s's card: %s" % (player[i].name, dealt_card)
 
         return (dealt_card, dealt_card_value)
 
@@ -75,31 +79,59 @@ def play_game():
         print
         for j in range(0, total_player_count):
             #player[j].hand += dealt_card_value
-            dealt_card, dealt_card_value = deck.deal_card()
-            player[j].hand += dealt_card_value
-            print "%s's card: %s" % (player[j].name, dealt_card)
+            deck.deal_card(j)
+            #player[j].hand += dealt_card_value
+            #print "%s's card: %s" % (player[j].name, dealt_card)
 
     print
     for i in range(0, total_player_count):
         print "%s's hand: %d" % (player[i].name, player[i].hand)
+        if i == len(player)-1:
+            dealer_move(i)
+        else:
+            player_move(i)
+    play_again()
 
+def player_move(i):
     question = "Would you like to (h)it or (s)tand: "
     action = raw_input(question)
     if action == 'h':
-        dealt_card, dealt_card_value = deck.deal_card()
-        player[0].hand += dealt_card_value
-        print "%s's card: %s" % (player[0].name, dealt_card)
+        deck.deal_card(i)
+        player_move(i)
+    elif action == 's':
+        pass
+    else:
+        print "'%s' is not valid" % action
+        player_move(i)
+
+def dealer_move(d):
+    #d = len(player)
+    dealer_hand = player[d].hand
+    print "Dealer has %d." % dealer_hand
+    if dealer_hand < 17:
+        print "Dealer must hit."
+        deck.deal_card(d)
+        dealer_move(d)
+    elif dealer_hand < 21:
+        print "Dealer stays."
+        pass
+    elif dealer_hand >= 22:
+        print "BUST!"
 
 
-    print "%d cards left in the deck" % deck.count()
+def play_again():
+    if (debug): print "%d cards left in the deck" % deck.count()
     question = "Would you like to play again? (y/n) "
     play_again = raw_input(question)
-    if (play_again == 'y'):
+    if play_again in ('y', 'Y'):
         for i in range(0, total_player_count):
             player[i].hand = 0
         if deck.count() < 15:
             deck.reset()
         play_game()
+    else:
+        print "Thank you for playing!"
+        exit()
 
 
 
@@ -120,6 +152,13 @@ def init_deck():
                 #deck.append(Card(s, f, v, c))
 
 
+def place_bet(i):
+    question = "How many chips would you like to bet? (1-%d) " % player[i].pot
+    player[i].bet = int(raw_input(question))
+    if player[i].bet < 1 or player[i].bet > player[i].pot:
+        print "Invalid bet."
+        place_bet()
+
 def init_player():
     ''' init Player(s) '''
     for i in range(1, total_player_count):
@@ -139,7 +178,7 @@ deck = Deck()
 init_player()
 dealer_name = init_dealer()
 print "Hi %s, %s will be your dealer today." % (player[0].name, dealer_name)
-question = "How many chips would you like to bet? (1-%d) " % player[0].pot
-bet = raw_input(question)
+place_bet(0)
+
 play_game()
 
