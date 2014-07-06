@@ -3,12 +3,9 @@
 import random
 
 total_player_count = 2    # includes Dealer
-total_deck_count = 1
 player = []
-deck = []
 
 class Player:
-
     position = -1
 
     def __init__(self, name, pot):
@@ -22,12 +19,15 @@ class Player:
     def __getitem__(self, key):
         return self.data[key]
 
+    def reset(self):
+        self.hand = 0
+
 class Deck:
     deck = []
     def __init__(self):
         self.reset()
 
-    def reset(self):
+    def reset(self, total_deck_count=1):
         ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
         self.deck = list(ranks * 4)
         self.deck *= total_deck_count
@@ -65,6 +65,11 @@ class Card:
         self.visible = True
 
 
+def rules():
+    print "WELCOME TO BLACKJACK!"
+    print "Dealer must hit at 17 and below."
+    print "Blackjack pays 2:1, a win pays 1:1"
+
 def play_game():
     for i in range(0,2):
         print
@@ -78,10 +83,12 @@ def play_game():
     for i in range(0, total_player_count):
         print "%s's hand: %d" % (player[i].name, player[i].hand)
 
-#question = "Would you like to (h)it or (s)tand: "
-#action = raw_input(question)
-#if action == 'h':
-    #deal_card()
+    question = "Would you like to (h)it or (s)tand: "
+    action = raw_input(question)
+    if action == 'h':
+        dealt_card, dealt_card_value = deck.deal_card()
+        player[0].hand += dealt_card_value
+        print "%s's card: %s" % (player[0].name, dealt_card)
 
 
     print "%d cards left in the deck" % deck.count()
@@ -127,9 +134,12 @@ def init_dealer():
     return random.choice(('Sam', 'Jim', 'Lucy', 'Sara'))
 
 #init_deck()
+rules()
 deck = Deck()
 init_player()
 dealer_name = init_dealer()
 print "Hi %s, %s will be your dealer today." % (player[0].name, dealer_name)
+question = "How many chips would you like to bet? (1-%d) " % player[0].pot
+bet = raw_input(question)
 play_game()
 
