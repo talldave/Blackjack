@@ -8,6 +8,7 @@ import random
 
 total_player_count = 2    # includes Dealer
 player = []
+hand = []
 debug = True
 
 class Player:
@@ -75,7 +76,7 @@ class Hand:
     def __init__(self):
         self.reset()
 
-    def reset():
+    def reset(self):
         self.value = 0
         self.cards = []
         self.aces = 0
@@ -200,10 +201,12 @@ def init_player():
         name = raw_input(question)
         initial_pot = 100
         player.append(Player(name, initial_pot))
+        hand.append(Hand())
 
 def init_dealer():
     ''' init Dealer '''
     player.append(Player('Dealer', 1000000))
+    hand.append(Hand())
     return random.choice(('Sam', 'Jim', 'Lucy', 'Sara'))
 
 #init_deck()
