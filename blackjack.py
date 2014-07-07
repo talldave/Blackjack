@@ -108,7 +108,7 @@ def play_game():
 
     print
     for i in range(0, total_player_count):
-        print "%s's hand: %d" % (player[i].name, player[i].hand)
+        print "%s's hand: %d" % (player[i].name, hand[i].value)
         if i == len(player)-1:
             dealer_move(i)
         else:
@@ -129,7 +129,7 @@ def player_move(i):
 
 def dealer_move(d):
     #d = len(player)
-    dealer_hand = player[d].hand
+    dealer_hand = hand[d].value
     print "Dealer has %d." % dealer_hand
     if dealer_hand < 17:
         print "Dealer must hit."
@@ -142,8 +142,8 @@ def dealer_move(d):
         print "BUST!"
 
 def evaluate_hand(i):
-    hand = player[i].hand
-    cards = player[i].cards
+    hand = hand[i].value
+    cards = hand[i].cards
     if hand >= 22:
         if 'A' in cards:
             player[i].hand -= 10
@@ -160,7 +160,7 @@ def play_again():
     play_again = raw_input(question)
     if play_again in ('y', 'Y'):
         for i in range(0, total_player_count):
-            player[i].hand = 0
+            hand[i].reset()
         if deck.count() < 15:
             deck.reset()
         play_game()
