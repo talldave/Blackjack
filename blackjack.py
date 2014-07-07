@@ -59,12 +59,13 @@ class Deck:
             dealt_card_value = dealt_card
         elif dealt_card == 'A':
             dealt_card_value = 11
-
         else:
             dealt_card_value = 10
 
-        player[i].cards.append(dealt_card)
-        player[i].hand += dealt_card_value
+        #player[i].cards.append(dealt_card)
+        #player[i].hand += dealt_card_value
+        hand[i].cards.append(dealt_card)
+        hand[i].value += dealt_card_value
         print "%s's card: %s" % (player[i].name, dealt_card)
 
         return (dealt_card, dealt_card_value)
