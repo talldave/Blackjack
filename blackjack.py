@@ -49,9 +49,9 @@ class Deck:
             if (debug): print self.deck
             self.shuffle()
             #random.shuffle(self.deck)
-            if (debug): print self.deck
             self.deck.pop(0) # burn card
         #self.cards_in_deck = len(self.deck)
+        if (debug): print self.deck
 
     def shuffle(self):
         random.shuffle(self.deck)
@@ -93,12 +93,14 @@ class Hand:
     def evaluate(self):
         #hand = hand[i].value
         #cards = hand[i].cards
+        if (debug): print "curr value %s" % self.value
         if self.value >= 22:
             #while card in self.cards:
             for card in self.cards:
-                print "card: %s" % card
+                print "card1: %s" % card
                 if card == 'A':
                    self.value -= 10
+                   if (debug): print "new value %s" % self.value
                    if self.value <= 21: break
                 #self.evaluate()
             if self.value >= 22:
@@ -173,8 +175,9 @@ def player_move(i):
 
 def dealer_move(d):
     #d = len(player)
-    dealer_hand = hand[d].value
-    if (debug): print "Dealer has %d." % dealer_hand
+    dealer_hand = hand[d].evaluate()
+    #dealer_hand = hand[d].value
+    if (debug): print "Dealer has %d." % hand[d].value
     if dealer_hand < 17:
         print "Dealer must hit."
         deck.deal_card(d)
