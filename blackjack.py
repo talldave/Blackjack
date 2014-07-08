@@ -10,7 +10,7 @@ import random
 total_player_count = 2    # includes Dealer
 player = []
 hand = []
-debug = True
+debug = False #True
 
 class Player:
     position = -1
@@ -105,7 +105,7 @@ class Hand:
         print "%s's cards: " % player[i].name,
         #for card in self.cards:
         for a, card in enumerate(self.cards):
-            if a == 0:
+            if a == 0 and len(self.cards) < 3:
                 if i == len(player)-1:
                     print "X",
                 else:
@@ -137,9 +137,11 @@ def play_game():
             #player[j].hand += dealt_card_value
             #print "%s's card: %s" % (player[j].name, dealt_card)
 
-    hand[i].show(i)
 
     print
+    for i in range(0, total_player_count):
+        hand[i].show(i)
+
     for i in range(0, total_player_count):
         if (debug): print "%s's hand: %d" % (player[i].name, hand[i].value)
         if i == len(player)-1:
@@ -165,7 +167,7 @@ def player_move(i):
 def dealer_move(d):
     #d = len(player)
     dealer_hand = hand[d].value
-    print "Dealer has %d." % dealer_hand
+    if (debug): print "Dealer has %d." % dealer_hand
     if dealer_hand < 17:
         print "Dealer must hit."
         deck.deal_card(d)
