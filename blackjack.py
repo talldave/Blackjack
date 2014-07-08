@@ -4,6 +4,7 @@
 # David Bianco
 # July 2014
 
+#from __future__ import print_function
 import random
 
 total_player_count = 2    # includes Dealer
@@ -67,7 +68,7 @@ class Deck:
         #player[i].hand += dealt_card_value
         hand[i].cards.append(dealt_card)
         hand[i].value += dealt_card_value
-        print "%s's card: %s" % (player[i].name, dealt_card)
+        if (debug): print "%s's card: %s" % (player[i].name, dealt_card)
 
         return (dealt_card, dealt_card_value)
 
@@ -81,7 +82,37 @@ class Hand:
         self.cards = []
         self.aces = 0
         self.ten = 0
+        self.pair = 0
 
+    def evaluate(self):
+        #hand = hand[i].value
+        #cards = hand[i].cards
+        if self.value >= 22:
+            #while card in self.cards:
+            for card in self.cards:
+                if card == 'A':
+                   self.value -= 10
+                   if self.value <= 21: break
+                #self.evaluate()
+            if self.value >= 22:
+                print "BUST!"
+        elif ((len(self.cards) == 2) and (self.aces == 1) and (self.ten == 1)):
+            print "BLACKJACK!"
+        elif ((len(self.cards) == 2) and (self.cards[0] == self.cards[1])):
+            self.pair = 1
+
+    def show(self, i):
+        print "%s's cards: " % player[i].name,
+        #for card in self.cards:
+        for a, card in enumerate(self.cards):
+            if a == 0:
+                if i == len(player)-1:
+                    print "X",
+                else:
+                    print "%s" % card,
+            else:
+                print "- %s" % card,
+        print
 
 class Card:
     def __init__(self, suit, face, value, color):
@@ -106,9 +137,11 @@ def play_game():
             #player[j].hand += dealt_card_value
             #print "%s's card: %s" % (player[j].name, dealt_card)
 
+    hand[i].show(i)
+
     print
     for i in range(0, total_player_count):
-        print "%s's hand: %d" % (player[i].name, hand[i].value)
+        if (debug): print "%s's hand: %d" % (player[i].name, hand[i].value)
         if i == len(player)-1:
             dealer_move(i)
         else:
@@ -118,10 +151,12 @@ def play_game():
 def player_move(i):
     question = "Would you like to (h)it or (s)tand: "
     action = raw_input(question)
-    if action == 'h':
+    if action in ('h', 'H'):
         deck.deal_card(i)
+        hand[i].show(i)
+        hand[i].evaluate()
         player_move(i)
-    elif action == 's':
+    elif action in ('s', 'S'):
         pass
     else:
         print "'%s' is not valid" % action
@@ -134,12 +169,14 @@ def dealer_move(d):
     if dealer_hand < 17:
         print "Dealer must hit."
         deck.deal_card(d)
+        hand[d].show(d)
+        hand[d].evaluate()
         dealer_move(d)
     elif dealer_hand < 21:
         print "Dealer stays."
         pass
     elif dealer_hand >= 22:
-        print "BUST!"
+        print "BUST!!!!"
 
 def evaluate_hand(i):
     hand = hand[i].value
@@ -167,24 +204,6 @@ def play_again():
     else:
         print "Thank you for playing!"
         exit()
-
-
-
-def init_deck():
-    ''' init deck '''
-    ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
-    deck = list(ranks * 4)
-    print deck
-    random.shuffle(deck)
-    print deck
-    deck.pop(0) # burn card
-#print "Card: %s" % deck[22]
-#colors = ['Red','Black']
-#suits = ['Hearts', 'Spades', 'Diamonds', 'Clubs']
-#for a in range(0, total_deck_count):
-        #for f in faces:
-            #for s in suits:
-                #deck.append(Card(s, f, v, c))
 
 
 def place_bet(i):
