@@ -218,25 +218,25 @@ def play_again():
 def place_bet(i):
     global q
     invalid_response = False
-    question = "How many chips would you like to bet? (1-%d) " % player[i].pot
+
     try:
+        question = "How many chips would you like to bet? (1-%d) " % player[i].pot
         player[i].bet = int(raw_input(question))
     except ValueError:
         invalid_response = True
-    #if not isinstance(player[i].bet, (int, long)):
-        #invalid_response = True
-    #else:
-        #player[i].bet = int(player[i].bet)
+
     if q > 3:
         print "It's obvious you don't understand the question.  Let's play again another time."
         exit()
+
     if not (1 <= player[i].bet <= player[i].pot):
-    #if not player[i].bet in xrange(1, player[i].pot):
         invalid_response = True
+
     if (invalid_response):
         q += 1
         print "Invalid bet."
         place_bet(i)
+
     q = 0
 
 def init_player():
