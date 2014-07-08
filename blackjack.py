@@ -7,10 +7,12 @@
 #from __future__ import print_function
 import random
 
+q = 0
 total_player_count = 2    # includes Dealer
 player = []
 hand = []
-debug = False #True
+debug = True
+#debug = False
 
 class Player:
     position = -1
@@ -37,14 +39,18 @@ class Deck:
         self.reset()
 
     def reset(self, total_deck_count=1):
-        ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
-        self.deck = list(ranks * 4)
-        self.deck *= total_deck_count
-        if (debug): print self.deck
-        self.shuffle()
-        #random.shuffle(self.deck)
-        if (debug): print self.deck
-        self.deck.pop(0) # burn card
+        if (debug):
+            ranks = (2,'A','A','A','A','J','J',6,'A',6,'A',8,6,6)
+            self.deck = list(ranks * 4)
+        else:
+            ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
+            self.deck = list(ranks * 4)
+            self.deck *= total_deck_count
+            if (debug): print self.deck
+            self.shuffle()
+            #random.shuffle(self.deck)
+            if (debug): print self.deck
+            self.deck.pop(0) # burn card
         #self.cards_in_deck = len(self.deck)
 
     def shuffle(self):
@@ -90,6 +96,7 @@ class Hand:
         if self.value >= 22:
             #while card in self.cards:
             for card in self.cards:
+                print "card: %s" % card
                 if card == 'A':
                    self.value -= 10
                    if self.value <= 21: break
@@ -209,11 +216,17 @@ def play_again():
 
 
 def place_bet(i):
+    global q
     question = "How many chips would you like to bet? (1-%d) " % player[i].pot
-    player[i].bet = int(raw_input(question))
-    if player[i].bet < 1 or player[i].bet > player[i].pot:
+    player[i].bet = raw_input(question)
+    if q > 3:
+        print "It's obvious you don't understand the question.  Let's play again another time."
+        exit()
+    if player[i].bet < 1 or player[i].bet > player[i].pot or not isinstance(player[i].bet, (int, long)):
+        q += 1
         print "Invalid bet."
-        place_bet()
+        place_bet(i)
+    q = 0
 
 def init_player():
     ''' init Player(s) '''
@@ -222,11 +235,13 @@ def init_player():
         name = raw_input(question)
         initial_pot = 100
         player.append(Player(name, initial_pot))
+        print "sdf %s" % player[0].position
         hand.append(Hand())
 
 def init_dealer():
     ''' init Dealer '''
     player.append(Player('Dealer', 1000000))
+    print "dfs %s" % player[1].position
     hand.append(Hand())
     return random.choice(('Sam', 'Jim', 'Lucy', 'Sara'))
 
