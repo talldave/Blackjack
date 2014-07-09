@@ -1,5 +1,6 @@
 
-Single player text-based Blackjack game, written in Python.
+Single player text-based Blackjack game, written in Python.  
+Code by David Bianco.   July 2014
 
 Player starts with 100 chips.    
 Can choose to play with 1-8 decks.  
