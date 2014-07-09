@@ -6,19 +6,15 @@
 
 import random
 
-q = 0
-total_player_count = 2    # includes Dealer
 player = []
 hand = []
-debug = True
-#debug = False
+#debug = True
+debug = False
 
 class Player:
-    position = -1
 
     def __init__(self, name, pot):
         self.name = name
-        Player.position += 1
         self.pot = pot
         self.bet = 0
         self.hand = 0
@@ -27,6 +23,8 @@ class Player:
         self.num_wins = 0
         self.num_losses = 0
         self.num_pushes = 0
+        self.total_games = 0
+        self.is_dealer = False
 
     def __getitem__(self, key):
         return self.data[key]
@@ -34,6 +32,7 @@ class Player:
     def reset(self):
         self.hand = 0
         self.cards = []
+
 
 class Deck:
     deck = []
@@ -93,7 +92,7 @@ class Hand:
         self.aces = 0
         self.ten = 0
         self.pair = 0
-        self.show_first = 0
+        self.show_first = False
 
     def evaluate(self):
         #hand = hand[i].value
@@ -122,37 +121,30 @@ class Hand:
         return self.value
 
     def show(self, i):
-        print "%s's cards: " % player[i].name,
+        print "\n%s's cards: " % player[i].name,
         #for card in self.cards:
         for a, card in enumerate(self.cards):
             if a == 0:
-                if i == len(player)-1 and self.show_first == 0:
+                if player[i].is_dealer and self.show_first == False:
                     print "X",
-                    self.show_first = 1
+                    self.show_first = True
                 else:
                     print "%s" % str(card).upper(),
             else:
                 print "- %s" % str(card).upper(),
         print
 
-class Card:
-    def __init__(self, suit, face, value, color):
-        self.suit = suit
-        self.face = face
-        self.value = value
-        self.color = color
-        self.visible = True
-
 
 def rules():
-    print "WELCOME TO BLACKJACK!"
+    print "\nWELCOME TO BLACKJACK!"
     print "Dealer must hit at 16 and below."
-    print "Blackjack pays 2:1, a win pays 1:1"
+    print "Blackjack pays 2:1, a win pays 1:1\n"
 
 def play_game():
+    place_bet()
     for i in range(0,2):
         print
-        for j in range(0, total_player_count):
+        for j in range(2):
             #player[j].hand += dealt_card_value
             deck.deal_card(j)
             #player[j].hand += dealt_card_value
@@ -160,10 +152,10 @@ def play_game():
 
 
     print
-    for i in range(0, total_player_count):
+    for i in range(2):
         hand[i].show(i)
 
-    for i in range(0, total_player_count):
+    for i in range(2):
         if debug: print "%s's hand: %d" % (player[i].name, hand[i].value)
         if i == len(player)-1:
             dealer_move(i)
@@ -178,9 +170,11 @@ def end_game():
         player[0].num_pushes += 1
     elif hand[0].value < hand[1].value:
         print "Dealer wins."
+        player[0].pot -= player[0].bet
         player[0].num_losses += 1
     elif hand[0].value > hand[1].value:
         print "You win!"
+        player[0].pot += player[0].bet
         player[0].num_wins += 1
 
 def player_move(i):
@@ -207,7 +201,7 @@ def dealer_move(d):
     if dealer_hand < 17:
         print "Dealer must hit."
         deck.deal_card(d)
-        hand[d].show(d)
+        #hand[d].show(d)
         hand[d].evaluate()
         dealer_move(d)
     elif dealer_hand < 22:
@@ -216,25 +210,20 @@ def dealer_move(d):
     elif dealer_hand >= 22:
         print "BUST!!!!"
 
-def evaluate_hand(i):
-    hand = hand[i].value
-    cards = hand[i].cards
-    if hand >= 22:
-        if 'A' in cards:
-            player[i].hand -= 10
-            evaluate_hand(i)
-        else:
-            print "BUST!"
-    elif ((len(cards) == 2) and ('A' in cards) and ('J' in cards)):
-        pass
-
-
 def play_again():
-    if debug: print "%d cards left in the deck" % deck.count()
+    ''' Current hand just ended, ask if player would like to continue '''
+    if debug:
+        print "%d cards left in the deck" % deck.count()
+
+    if player[0].pot == 0:
+        print "Sorry, but you have no chips left."
+        exit()
+
     question = "Would you like to play again? (y/n) "
     play_again = raw_input(question)
+
     if play_again in ('y', 'Y'):
-        for i in range(0, total_player_count):
+        for i in range(2):
             hand[i].reset()
         if deck.count() < 15:
             deck.reset()
@@ -246,13 +235,13 @@ def play_again():
         exit()
 
 
-def place_bet(i):
-    global q
+def place_bet():
+    q = 0
     invalid_response = False
 
     try:
-        question = "How many chips would you like to bet? (1-%d) " % player[i].pot
-        player[i].bet = int(raw_input(question))
+        question = "How many chips would you like to bet? (1-%d) " % player[0].pot
+        player[0].bet = int(raw_input(question))
     except ValueError:
         invalid_response = True
 
@@ -260,30 +249,28 @@ def place_bet(i):
         print "It's obvious you don't understand the question.  Let's play again another time."
         exit()
 
-    if not (1 <= player[i].bet <= player[i].pot):
+    if not (1 <= player[0].bet <= player[0].pot):
         invalid_response = True
 
     if (invalid_response):
         q += 1
         print "Invalid bet."
-        place_bet(i)
+        place_bet()
 
     q = 0
 
 def init_player():
-    ''' init Player(s) '''
-    for i in range(1, total_player_count):
-        question = "Enter the name of Player #%d: " % i
-        name = raw_input(question)
-        initial_pot = 100
-        player.append(Player(name, initial_pot))
-        print "sdf %s" % player[0].position
-        hand.append(Hand())
+    ''' init Player '''
+    question = "Please enter your name: "
+    name = raw_input(question)
+    initial_pot = 100
+    player.append(Player(name, initial_pot))
+    hand.append(Hand())
 
 def init_dealer():
     ''' init Dealer '''
     player.append(Player('Dealer', 1000000))
-    print "dfs %s" % player[1].position
+    player[1].is_dealer = True
     hand.append(Hand())
     return random.choice(('Sam', 'Jim', 'Lucy', 'Sara'))
 
@@ -293,7 +280,6 @@ deck = Deck()
 init_player()
 dealer_name = init_dealer()
 print "Hi %s, %s will be your dealer today." % (player[0].name, dealer_name)
-place_bet(0)
 
 play_game()
 
