@@ -4,7 +4,6 @@
 # David Bianco
 # July 2014
 
-#from __future__ import print_function
 import random
 
 q = 0
@@ -25,6 +24,9 @@ class Player:
         self.hand = 0
         self.cards = []
         self.action = ""
+        self.num_wins = 0
+        self.num_losses = 0
+        self.num_pushes = 0
 
     def __getitem__(self, key):
         return self.data[key]
@@ -39,19 +41,21 @@ class Deck:
         self.reset()
 
     def reset(self, total_deck_count=1):
-        if (debug):
+        debug = False
+        if debug:
             ranks = (2,'A','A','A','A','J','J',6,'A',6,'A',8,6,6)
             self.deck = list(ranks * 4)
         else:
+            debug = True
             ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
             self.deck = list(ranks * 4)
             self.deck *= total_deck_count
-            if (debug): print self.deck
+            if debug: print self.deck
             self.shuffle()
             #random.shuffle(self.deck)
             self.deck.pop(0) # burn card
         #self.cards_in_deck = len(self.deck)
-        if (debug): print self.deck
+        if debug: print self.deck
 
     def shuffle(self):
         random.shuffle(self.deck)
@@ -74,7 +78,7 @@ class Deck:
         #player[i].hand += dealt_card_value
         hand[i].cards.append(dealt_card)
         hand[i].value += dealt_card_value
-        if (debug): print "%s's card: %s" % (player[i].name, dealt_card)
+        if debug: print "%s's card: %s" % (player[i].name, dealt_card)
 
         return (dealt_card, dealt_card_value)
 
@@ -89,38 +93,46 @@ class Hand:
         self.aces = 0
         self.ten = 0
         self.pair = 0
+        self.show_first = 0
 
     def evaluate(self):
         #hand = hand[i].value
         #cards = hand[i].cards
-        if (debug): print "curr value %s" % self.value
+        if debug: print "curr value %s" % self.value
+        if debug: print self.cards
         if self.value >= 22:
             #while card in self.cards:
-            for card in self.cards:
-                print "card1: %s" % card
+            for i, card in enumerate(self.cards):
+                if debug: print "card %d: %s" % (i,card)
                 if card == 'A':
                    self.value -= 10
-                   if (debug): print "new value %s" % self.value
+                   self.cards[i] = 'a'
+                   if debug: print self.cards
+                   if debug: print "new value %s" % self.value
                    if self.value <= 21: break
                 #self.evaluate()
             if self.value >= 22:
                 print "BUST!"
+                play_again()
         elif ((len(self.cards) == 2) and (self.aces == 1) and (self.ten == 1)):
             print "BLACKJACK!"
+            play_again()
         elif ((len(self.cards) == 2) and (self.cards[0] == self.cards[1])):
             self.pair = 1
+        return self.value
 
     def show(self, i):
         print "%s's cards: " % player[i].name,
         #for card in self.cards:
         for a, card in enumerate(self.cards):
-            if a == 0 and len(self.cards) < 3:
-                if i == len(player)-1:
+            if a == 0:
+                if i == len(player)-1 and self.show_first == 0:
                     print "X",
+                    self.show_first = 1
                 else:
-                    print "%s" % card,
+                    print "%s" % str(card).upper(),
             else:
-                print "- %s" % card,
+                print "- %s" % str(card).upper(),
         print
 
 class Card:
@@ -152,12 +164,24 @@ def play_game():
         hand[i].show(i)
 
     for i in range(0, total_player_count):
-        if (debug): print "%s's hand: %d" % (player[i].name, hand[i].value)
+        if debug: print "%s's hand: %d" % (player[i].name, hand[i].value)
         if i == len(player)-1:
             dealer_move(i)
         else:
             player_move(i)
+    end_game()
     play_again()
+
+def end_game():
+    if hand[0].value == hand[1].value:
+        print "PUSH"
+        player[0].num_pushes += 1
+    elif hand[0].value < hand[1].value:
+        print "Dealer wins."
+        player[0].num_losses += 1
+    elif hand[0].value > hand[1].value:
+        print "You win!"
+        player[0].num_wins += 1
 
 def player_move(i):
     question = "Would you like to (h)it or (s)tand: "
@@ -168,6 +192,7 @@ def player_move(i):
         hand[i].evaluate()
         player_move(i)
     elif action in ('s', 'S'):
+        print
         pass
     else:
         print "'%s' is not valid" % action
@@ -177,14 +202,15 @@ def dealer_move(d):
     #d = len(player)
     dealer_hand = hand[d].evaluate()
     #dealer_hand = hand[d].value
-    if (debug): print "Dealer has %d." % hand[d].value
+    hand[d].show(d)
+    print "Dealer has %s." % dealer_hand
     if dealer_hand < 17:
         print "Dealer must hit."
         deck.deal_card(d)
         hand[d].show(d)
         hand[d].evaluate()
         dealer_move(d)
-    elif dealer_hand < 21:
+    elif dealer_hand < 22:
         print "Dealer stays."
         pass
     elif dealer_hand >= 22:
@@ -204,7 +230,7 @@ def evaluate_hand(i):
 
 
 def play_again():
-    if (debug): print "%d cards left in the deck" % deck.count()
+    if debug: print "%d cards left in the deck" % deck.count()
     question = "Would you like to play again? (y/n) "
     play_again = raw_input(question)
     if play_again in ('y', 'Y'):
@@ -214,6 +240,8 @@ def play_again():
             deck.reset()
         play_game()
     else:
+        total_games = player[0].num_wins + player[0].num_losses + player[0].num_pushes
+        print "You played %d games.\nWon: %d - Push: %d - Lost: %d" % (total_games, player[0].num_wins, player[0].num_losses, player[0].num_pushes)
         print "Thank you for playing!"
         exit()
 
