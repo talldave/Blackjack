@@ -37,7 +37,7 @@ class Player:
         self.cards = []
         self.blackjack = False
         self.bust = False
-        self.show_first = False
+        self.show_first_card = False
 
     def deal_card(self):
         dealt_card = deck.deck.pop(0)
@@ -52,16 +52,14 @@ class Player:
         self.cards.append(dealt_card)
         self.hand += dealt_card_value
 
-        if debug: print "%s's card: %s" % (self.name, dealt_card)
-
     def show(self):
         print "\n%s's cards: " % self.name,
 
         for i, card in enumerate(self.cards):
             if i == 0:
-                if self.is_dealer and self.show_first == False:
+                if self.is_dealer and self.show_first_card == False:
                     print "X",
-                    self.show_first = True
+                    self.show_first_card = True
                 else:
                     print "%s" % str(card).upper(),
             else:
@@ -69,18 +67,14 @@ class Player:
         print
 
     def evaluate_hand(self):
-        if debug: print "curr value %s" % self.value
-        if debug: print self.cards
-        if self.hand >= 22:
+        if self.hand > 21:
             for i, card in enumerate(self.cards):
-                if debug: print "card %d: %s" % (i,card)
                 if card == 'A':
                    self.hand -= 10
                    self.cards[i] = 'a'
-                   if debug: print self.cards
-                   if debug: print "new value %s" % self.hand
-                   if self.hand <= 21: break
-            if self.hand >= 22:
+                   if self.hand <= 21:
+                       break
+            if self.hand > 21:
                 self.bust = True
         elif ((len(self.cards) == 2) and (self.hand == 21)):
             self.blackjack = True
@@ -101,9 +95,9 @@ class Deck:
             deck_count = 1
 
         if deck_count == 1:
-            print "You will be playing with 1 deck today."
+            print "You will be playing with 1 deck."
         else:
-            print "You will be playing with %d decks today.  Good luck!" % deck_count
+            print "You will be playing with %d decks.  Good luck!" % deck_count
 
         self.num_decks = deck_count
         self.reset()
@@ -130,7 +124,7 @@ class Deck:
 
 # # #  BEGIN FUNCTIONS # # #
 
-def rules():
+def welcome():
     ''' print welcome message '''
 
     print r"""
@@ -147,11 +141,11 @@ def rules():
     print "\nWELCOME TO BLACKJACK!"
     print "Dealer must hit at 16 and below."
     print "Blackjack pays 2:1, a win pays 1:1\n"
+    print "Hi %s, %s will be your dealer today." % (player1.name, random.choice(('Sam', 'Jim', 'Lucy', 'Sara')))
 
 def play_game():
     ''' Deal first 2 cards.  Player moves, then dealer moves, then compare hands.  '''
 
-    os.system('clear') # clear screen
     place_bet()
 
     for i in range(2):
@@ -197,11 +191,17 @@ def place_bet(num_response = 0):
         print "Invalid bet."
         place_bet(num_response)
 
-def player_move():
+def player_move(num_response = 0):
     ''' Ask player to hit or stand.  Hand is lost if bust. '''
 
     player1.evaluate_hand()
-    if player1.blackjack: return
+    if player1.blackjack:
+        return
+
+    if num_response > 3:
+        print "It seems you don't understand the question.  Let's play again another time."
+        exit()
+
     action = raw_input("----> Would you like to (h)it or (s)tand: ")
     if action in ('h', 'H'):
         time.sleep(sleep_seconds)
@@ -218,8 +218,9 @@ def player_move():
     elif action in ('s', 'S'):
         print
     else:
+        num_response += 1
         print "'%s' is not valid" % action
-        player_move()
+        player_move(num_response)
 
 def dealer_move():
     ''' Dealer < 17, hit. 16 < Dealer < 22, stay. Dealer > 21, bust. '''
@@ -286,6 +287,7 @@ def play_again():
                 player.reset()
             if deck.num_cards() < 15:
                 deck.reset()
+            os.system('clear') # clear screen
             play_game()
 
     total_games = player1.num_wins + player1.num_losses + player1.num_pushes
@@ -306,8 +308,7 @@ player1 = Player()
 dealer = Player('Dealer')
 players = [player1, dealer]
 
-rules()
-print "Hi %s, %s will be your dealer today." % (player1.name, random.choice(('Sam', 'Jim', 'Lucy', 'Sara')))
+welcome()
 deck = Deck()
 
 play_game()
