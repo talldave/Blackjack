@@ -6,11 +6,13 @@
 # July 2014
 
 import random
+import time
 #import curses
 import os
 
 #debug = True
 debug = False
+sleep_seconds = 2
 
 # # #  BEGIN CLASS # # #
 
@@ -19,13 +21,12 @@ class Player:
     def __init__(self, name=False):
         self.reset()
         if not name:
-            self.name = raw_input("Please enter your name: ")
+            self.name = raw_input("----> Please enter your name: ")
             self.pot = 100
             self.bet = 0
             self.num_wins = 0
             self.num_losses = 0
             self.num_pushes = 0
-            self.total_games = 0
             self.is_dealer = False
         else:
             self.name = name
@@ -92,7 +93,7 @@ class Deck:
 
     def __init__(self):
         try:
-            deck_count = int(raw_input("How many decks would you like to play with today? (1-8) "))
+            deck_count = int(raw_input("\n----> How many decks would you like to play with today? (1-8) "))
         except ValueError:
             deck_count = 1
         if not (0 < deck_count < 9):
@@ -101,6 +102,7 @@ class Deck:
             print "You will be playing with 1 deck today."
         else:
             print "You will be playing with %d decks today.  Good luck!" % deck_count
+        wait = raw_input("Press any key to start playing.")
         self.num_decks = deck_count
         self.reset()
 
@@ -159,7 +161,7 @@ def place_bet(num_response = 0):
     invalid_response = False
 
     try:
-        question = "How many chips would you like to bet? (1-%d) " % player1.pot
+        question = "\n----> How many chips would you like to bet? (1-%d) " % player1.pot
         player1.bet = int(raw_input(question))
     except ValueError:
         invalid_response = True
@@ -179,13 +181,14 @@ def place_bet(num_response = 0):
 def player_move():
     player1.evaluate_hand()
     if player1.blackjack: return
-    action = raw_input("Would you like to (h)it or (s)tand: ")
+    action = raw_input("----> Would you like to (h)it or (s)tand: ")
     if action in ('h', 'H'):
+        time.sleep(sleep_seconds)
         player1.deal_card()
         player1.show()
         player1.evaluate_hand()
         if player1.bust:
-            print "BUST!"
+            print "\n\n#*#*# BUST! Dealer wins. #*#*#\n"
             player1.pot -= player1.bet
             player1.num_losses += 1
             play_again()
@@ -204,41 +207,44 @@ def dealer_move():
     print "Dealer has %s." % dealer.hand,
 
     if dealer.bust:
-        print "BUST!!!!"
+        print "\n\n#*#*#*# BUST!!!! You win. #*#*#\n"
         player1.num_wins += 1
         player1.pot += player1.bet
         play_again()
 
     if dealer.hand < 17:
         print "Dealer must hit."
+        time.sleep(sleep_seconds)
         dealer.deal_card()
         dealer_move()
     elif dealer.hand < 22:
         print "Dealer stays."
 
 def end_game():
+    print "\n#*#*#",
     if dealer.blackjack and player1.blackjack:
-        print "Both you and the dealer have Blackjack.  Push."
+        print "Both you and the dealer have Blackjack.  Push.",
         player1.num_pushes += 1
     elif dealer.blackjack and not player1.blackjack:
-        print "Dealer has blackjack!"
+        print "Dealer has blackjack!",
         player1.num_losses += 1
         player1.pot -= player1.bet
     elif not dealer.blackjack and player1.blackjack:
-        print "You have blackjack!!"
+        print "You have blackjack!!",
         player1.pot += player1.bet * 2
         player1.num_wins += 1
     elif player1.hand == dealer.hand:
-        print "PUSH"
+        print "PUSH",
         player1.num_pushes += 1
     elif player1.hand < dealer.hand:
-        print "Dealer wins."
+        print "Dealer wins.",
         player1.pot -= player1.bet
         player1.num_losses += 1
     elif player1.hand > dealer.hand:
-        print "You win!"
+        print "You win!",
         player1.pot += player1.bet
         player1.num_wins += 1
+    print "#*#*#\n"
 
 def play_again():
     ''' Current hand has just ended, ask if player would like to continue '''
@@ -247,23 +253,22 @@ def play_again():
 
     if player1.pot == 0:
         print "Sorry, but you have no chips left."
-        exit()
-
-    play_again = raw_input("Would you like to play again? (y/n) ")
-
-    if play_again in ('y', 'Y'):
-        for player in players:
-            player.reset()
-        if deck.num_cards() < 15:
-            deck.reset()
-        play_game()
     else:
-        total_games = player1.num_wins + player1.num_losses + player1.num_pushes
-        print "You played %d games." % total_games
-        print "Won: %d | Lost: %d | Push: %d" % (player1.num_wins, player1.num_losses, player1.num_pushes)
-        print "You have %d chips left." % player1.pot
-        print "Thank you for playing!"
-        exit()
+        play_again = raw_input("----> Would you like to play again? (y/n) ")
+
+        if play_again in ('y', 'Y'):
+            for player in players:
+                player.reset()
+            if deck.num_cards() < 15:
+                deck.reset()
+            play_game()
+
+    total_games = player1.num_wins + player1.num_losses + player1.num_pushes
+    print "\nYou played %d games." % total_games
+    print "Won: %d | Lost: %d | Push: %d" % (player1.num_wins, player1.num_losses, player1.num_pushes)
+    print "You have %d chips left." % player1.pot
+    print "Thank you for playing!"
+    exit()
 
 # # #  END FUNCTIONS # # #
 
