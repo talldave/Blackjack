@@ -287,7 +287,7 @@ def play_again():
                 player.reset()
             if deck.num_cards() < 15:
                 deck.reset()
-            os.system('clear') # clear screen
+            os.system('clear') # clear screen. 'cls' for windows
             play_game()
 
     total_games = player1.num_wins + player1.num_losses + player1.num_pushes
@@ -306,7 +306,7 @@ def play_again():
 
 player1 = Player()
 dealer = Player('Dealer')
-players = [player1, dealer]
+players = [player1, dealer,]
 
 welcome()
 deck = Deck()
