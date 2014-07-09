@@ -165,7 +165,7 @@ def play_game():
         else:
             player_move()
 
-    end_game()
+    end_hand()
     play_again()
 
 def place_bet(num_response = 0):
@@ -227,7 +227,8 @@ def dealer_move():
 
     dealer.show()
     dealer.evaluate_hand()
-    if dealer.blackjack: return
+    if dealer.blackjack:
+        return
     print "Dealer has %s." % dealer.hand,
 
     if dealer.bust:
@@ -244,7 +245,7 @@ def dealer_move():
     elif dealer.hand < 22:
         print "Dealer stays."
 
-def end_game():
+def end_hand():
     ''' Compare player hand to dealer hand, and do bet math. '''
 
     print "\n#*#*#",
@@ -279,6 +280,7 @@ def play_again():
 
     if player1.pot == 0:
         print "Sorry, but you have no chips left."
+        end_game()
     else:
         play_again = raw_input("----> Would you like to play again? (y/n) ")
 
@@ -289,8 +291,13 @@ def play_again():
                 deck.reset()
             os.system('clear') # clear screen. 'cls' for windows
             play_game()
+        else:
+            end_game()
 
+def end_game():
+    ''' Tally wins/losses.  Exit game. '''
     total_games = player1.num_wins + player1.num_losses + player1.num_pushes
+
     if total_games == 1:
         game_word = "game"
     else:
@@ -306,7 +313,7 @@ def play_again():
 
 player1 = Player()
 dealer = Player('Dealer')
-players = [player1, dealer,]
+players = [player1, dealer]
 
 welcome()
 deck = Deck()
