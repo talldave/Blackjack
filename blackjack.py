@@ -103,14 +103,17 @@ class Deck:
         self.reset()
 
     def reset(self):
-        ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
+        #ranks = (2,'A','J','J','A') # both dealer and player have blackjack
+        #ranks = (2,'A','J','J','8') # only player has blackjack
+        ranks = (2,'K','J','J','A') # only dealer has blackjack
+        #ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
         self.deck = list(ranks * 4)
         self.deck *= self.num_decks
 
         if debug:
             print self.deck
 
-        self.shuffle()
+        #self.shuffle()
 
         if debug:
             print self.deck
@@ -160,8 +163,6 @@ def play_game():
         player.show()
 
     for player in players:
-        if debug:
-            print "%s's hand: %d" % (player.name, player.hand)
         if player.is_dealer:
             dealer_move()
         else:
@@ -204,9 +205,18 @@ def player_move(num_response = 0):
         print "It seems you don't understand the question.  Let's play again another time."
         exit()
 
-    action = raw_input("----> Would you like to (h)it or (s)tand: ")
-    if action in ('h', 'H'):
+    if len(player1.cards) == 2 and player1.pot >= player1.bet * 2:
+        action = raw_input("----> Would you like to (h)it or (s)tand or (d)ouble down: ")
+        valid_response = ['h', 'H', 'd', 'D']
+    else:
+        action = raw_input("----> Would you like to (h)it or (s)tand: ")
+        valid_response = ['h', 'H']
+
+    if action in valid_response:
         time.sleep(sleep_seconds)
+        if action in ('d','D'):
+            player1.bet *= 2
+            print "Your bet is now %d." % player1.bet
         player1.deal_card()
         player1.show()
         player1.evaluate_hand()
@@ -215,7 +225,7 @@ def player_move(num_response = 0):
             player1.pot -= player1.bet
             player1.num_losses += 1
             play_again()
-        else:
+        elif action in ('h','H'):
             player_move()
     elif action not in ('s', 'S'):
         num_response += 1
@@ -227,7 +237,7 @@ def dealer_move():
 
     dealer.show()
     dealer.evaluate_hand()
-    if dealer.blackjack:
+    if dealer.blackjack or player1.blackjack:
         return
     print "Dealer has %s." % dealer.hand,
 
@@ -282,14 +292,15 @@ def play_again():
         print "Sorry, but you have no chips left."
         end_game()
     else:
+        print "You have %d chips remaining." % player1.pot
         play_again = raw_input("----> Would you like to play again? (y/n) ")
 
         if play_again in ('y', 'Y'):
+            os.system('clear') # clear screen. 'cls' for windows
             for player in players:
                 player.reset()
             if deck.num_cards() < 15:
                 deck.reset()
-            os.system('clear') # clear screen. 'cls' for windows
             play_game()
         else:
             end_game()
