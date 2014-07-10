@@ -172,16 +172,19 @@ def play_game():
     end_hand()
     play_again()
 
-def place_bet(num_response = 0):
+def place_bet(num_response = 0, test_response = False):
     ''' Ask player to place their bet. '''
 
     invalid_response = False
 
-    try:
-        question = "\n----> How many chips would you like to bet? (1-%d) " % player1.pot
-        player1.bet = int(raw_input(question))
-    except ValueError:
-        invalid_response = True
+    if test_response:
+        player1.bet = test_response
+    else:
+        try:
+            question = "\n----> How many chips would you like to bet? (1-%d) " % player1.pot
+            player1.bet = int(raw_input(question))
+        except ValueError:
+            invalid_response = True
 
     if num_response > 3:
         print "It seems you don't understand the question.  Let's play again another time."
@@ -194,6 +197,15 @@ def place_bet(num_response = 0):
         num_response += 1
         print "Invalid bet."
         place_bet(num_response)
+
+#def require_input(question, num_response = 0):
+    #response = raw_input(question)
+# hit_stand
+# hit_stand_double
+# play_again
+# num_decks
+# bet
+# player_name
 
 def player_move(num_response = 0):
     ''' Ask player to hit or stand.  Hand is lost if bust. '''
