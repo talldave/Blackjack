@@ -201,7 +201,7 @@ def play_game(players, deck):
             player_move(player, deck)
 
     if not player.bust:
-        end_hand()
+        end_hand(player1, dealer)
 
     play_again(player1, players, deck)
 
@@ -323,9 +323,9 @@ def play_again(player1, players, deck):
                 player.reset()
             if deck.num_cards() < 15:
                 deck.reset()
-            place_bet(player1)
+            play_game(players, deck)
         else:
-            end_game()
+            end_game(player1)
 
 def end_game(player1):
     ''' Tally wins/losses.  Exit game. '''
