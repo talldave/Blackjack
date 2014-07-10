@@ -147,6 +147,7 @@ def welcome():
 
     print "\nWELCOME TO BLACKJACK!"
     print "Dealer must hit at 16 and below."
+    print "Double Down only on first 2 cards."
     print "Blackjack pays 2:1, a win pays 1:1\n"
     print "Hi %s, %s will be your dealer today." % (player1.name, random.choice(('Sam', 'Jim', 'Lucy', 'Sara')))
 
