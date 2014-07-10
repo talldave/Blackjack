@@ -10,9 +10,9 @@ import time
 #import curses
 import os
 
-#debug = True
-debug = False
-sleep_seconds = 2    # for suspense
+debug = True
+#debug = False
+sleep_seconds = 0    # use 1 or 2 for suspense
 
 # # #  BEGIN CLASS # # #
 
@@ -104,14 +104,18 @@ class Deck:
 
     def reset(self):
         ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
-        #ranks = (2,'A','A','A','A','J','J',6,'A',6,'A',8,6,6) # test
-        #ranks = (2,'A',10,10,10,9,'A',10,10,'A',10,'A') #test
         self.deck = list(ranks * 4)
         self.deck *= self.num_decks
-        if debug: print self.deck
+
+        if debug:
+            print self.deck
+
         self.shuffle()
+
+        if debug:
+            print self.deck
+
         self.deck.pop(0) # burn card
-        if debug: print self.deck
 
     def shuffle(self):
         random.shuffle(self.deck)
@@ -149,11 +153,9 @@ def play_game():
     place_bet()
 
     for i in range(2):
-        print
         for player in players:
             player.deal_card()
 
-    print
     for player in players:
         player.show()
 
@@ -215,11 +217,9 @@ def player_move(num_response = 0):
             play_again()
         else:
             player_move()
-    elif action in ('s', 'S'):
-        print
-    else:
+    elif action not in ('s', 'S'):
         num_response += 1
-        print "'%s' is not valid" % action
+        print "'%s' is not a valid response." % action
         player_move(num_response)
 
 def dealer_move():

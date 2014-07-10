@@ -12,6 +12,7 @@ Not implemented:
 
 * Multi-player
 * Splitting
+* Double Down
 * Insurance
 * Surrender
 * ncurses
