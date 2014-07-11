@@ -10,9 +10,9 @@ import time
 #import curses
 import os
 
-debug = True
-#debug = False
-sleep_seconds = 0    # use 1 or 2 for suspense
+#debug = True
+debug = False
+#sleep_seconds = 0    # use 1 or 2 for suspense
 
 # # #  BEGIN CLASS # # #
 
@@ -36,6 +36,7 @@ class Player:
         self.hand = 0
         self.cards = []
         self.blackjack = False
+        self.pair = False
         self.bust = False
         self.show_first_card = False
 
@@ -99,6 +100,7 @@ class Deck:
         else:
             print "You will be playing with %d decks.  Good luck!" % deck_count
 
+        self.suspense = 2  # number of seconds to sleep before card is dealt. try 0, 1 or 2
         self.ranks = ranks
         self.do_shuffle = shuffle
         self.num_decks = deck_count
@@ -200,13 +202,35 @@ def play_game(players, deck):
         else:
             player_move(player, deck)
 
-    if not player.bust:
+        if player.bust:
+            break
+
+    if not player1.bust and not dealer.bust:
         end_hand(player1, dealer)
 
-    play_again(player1, players, deck)
+    if play_again(player1, players, deck):
+        play_game(players, deck)
+    else:
+        end_game(player1)
 
 
-#def require_input(question, num_response = 0):
+def require_input(ask, response = False, num_response = 0):
+    num_response += 1
+
+    if ask == 'play_again':
+        question = "----> Would you like to play again? (y/n) "
+    elif ask == 'hit_stand_double':
+        question = "----> Would you like to (h)it or (s)tand or (d)ouble down: "
+    elif ask == 'hit_stand':
+        question = "----> Would you like to (h)it or (s)tand: "
+
+    if response:
+        print question + response
+    else:
+        response = raw_input(question)
+
+    return response
+
     #response = raw_input(question)
 # hit_stand
 # hit_stand_double
@@ -234,7 +258,7 @@ def player_move(player1, deck, num_response = 0):
         valid_response = ['h', 'H']
 
     if action in valid_response:
-        time.sleep(sleep_seconds)
+        time.sleep(deck.suspense)
         if action in ('d','D'):
             player1.bet *= 2
             print "Your bet is now %d." % player1.bet
@@ -271,7 +295,7 @@ def dealer_move(dealer, player1,  deck):
 
     if dealer.hand < 17:
         print "Dealer must hit."
-        time.sleep(sleep_seconds)
+        time.sleep(deck.suspense)
         dealer.deal_card(deck)
         dealer_move(dealer, player1, deck)
     elif dealer.hand < 22:
@@ -305,27 +329,29 @@ def end_hand(player1, dealer):
         player1.num_wins += 1
     print "#*#*#\n"
 
-def play_again(player1, players, deck):
+def play_again(player1, players, deck, test_response = False):
     ''' Current hand has just ended, ask if player would like to continue '''
     if debug:
         print "%d cards left in the deck" % deck.num_cards()
 
     if player1.pot == 0:
         print "Sorry, but you have no chips left."
-        end_game(player1)
+        return False
     else:
         print "You have %d chips remaining." % player1.pot
-        play_again = raw_input("----> Would you like to play again? (y/n) ")
+        play_again = require_input('play_again', test_response)
+        #play_again = raw_input("----> Would you like to play again? (y/n) ")
 
         if play_again in ('y', 'Y'):
-            os.system('clear') # clear screen. 'cls' for windows
+            if not debug:
+                os.system('clear') # clear screen. 'cls' for windows
             for player in players:
                 player.reset()
             if deck.num_cards() < 15:
                 deck.reset()
-            play_game(players, deck)
+            return True
         else:
-            end_game(player1)
+            return False
 
 def end_game(player1):
     ''' Tally wins/losses.  Exit game. '''
