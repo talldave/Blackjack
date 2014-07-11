@@ -11,6 +11,7 @@ import time
 import os
 
 debug = False
+#debug = True
 
 # # #  BEGIN CLASS # # #
 
@@ -83,10 +84,8 @@ class Player:
 
 
 class Deck:
-    deck = []
 
     def __init__(self, ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A'), shuffle = True):
-
         try:
             deck_count = int(require_input('num_decks'))
         except ValueError:
@@ -158,16 +157,14 @@ def place_bet(test_response = [], num_response = 0):
     invalid_response = False
 
     try:
-        #question = "\n----> How many chips would you like to bet? (1-%d) " % player1.pot
         response = require_input('bet', test_response, num_response)
         player1.bet = int(response)
-        #player1.bet = int(require_input('bet', test_response, num_response))
     except ValueError:
         invalid_response = True
 
     if num_response > 3:
         print "It seems you don't understand the question.  Let's play again another time."
-        exit()
+        end_game()
 
     if not (1 <= player1.bet <= player1.pot):
         invalid_response = True
@@ -198,16 +195,15 @@ def play_game():
         if player.bust:
             break
 
-    if not player1.bust and not dealer.bust:
-        end_hand()
+    end_hand()
 
     if play_again():
         play_game()
     else:
         end_game()
 
-
 def require_input(ask, response = [], num_response = 0):
+    ''' Function to ask for player input.  Also allows for passed-in response for testing '''
 
     if ask == 'play_again':
         question = "----> Would you like to play again? (y/n) "
@@ -228,10 +224,8 @@ def require_input(ask, response = [], num_response = 0):
     else:
         return raw_input(question)
 
-
-
 def player_move(test_response = False, num_response = 0, invalid_response = 0):
-    ''' Ask player to hit or stand.  Hand is lost if bust. '''
+    ''' Ask player to hit, stand, or double-down.  Hand is lost if bust. '''
 
     player1.evaluate_hand()
     if player1.blackjack:
@@ -239,14 +233,12 @@ def player_move(test_response = False, num_response = 0, invalid_response = 0):
 
     if invalid_response > 3:
         print "It seems you don't understand the question.  Let's play again another time."
-        exit()
+        end_game()
 
     if len(player1.cards) == 2 and player1.pot >= player1.bet * 2:
-        #action = raw_input("----> Would you like to (h)it or (s)tand or (d)ouble down: ")
         action = require_input('hit_stand_double', test_response, num_response)
         valid_response = ['h', 'H', 'd', 'D']
     else:
-        #action = raw_input("----> Would you like to (h)it or (s)tand: ")
         action = require_input('hit_stand', test_response, num_response)
         valid_response = ['h', 'H']
 
@@ -256,17 +248,17 @@ def player_move(test_response = False, num_response = 0, invalid_response = 0):
         if action in ('d', 'D'):
             player1.bet *= 2
             print "Your bet is now %d." % player1.bet
+
         time.sleep(deck.suspense)
         player1.deal_card()
         player1.show()
         player1.evaluate_hand()
+
         if player1.bust:
-            print "\n\n#*#*# BUST! Dealer wins. #*#*#\n"
-            player1.pot -= player1.bet
-            player1.num_losses += 1
             return
         elif action in ('h', 'H'):
             player_move(test_response, num_response)
+
     elif action not in ('s', 'S'):
         invalid_response += 1
         print "'%s' is not a valid response." % action
@@ -282,11 +274,6 @@ def dealer_move():
         return
     print "Dealer has %s." % dealer.hand,
 
-    if dealer.bust:
-        print "\n\n#*#*# BUST!!!! You win. #*#*#\n"
-        player1.num_wins += 1
-        player1.pot += player1.bet
-
     if dealer.hand < 17:
         print "Dealer must hit."
         time.sleep(deck.suspense)
@@ -294,12 +281,22 @@ def dealer_move():
         dealer_move()
     elif dealer.hand < 22:
         print "Dealer stays."
+    else:
+        print
 
 def end_hand():
     ''' Compare player hand to dealer hand, and do bet math. '''
 
     print "\n#*#*#",
-    if dealer.blackjack and player1.blackjack:
+    if player1.bust:
+        print "BUST! Dealer wins.",
+        player1.pot -= player1.bet
+        player1.num_losses += 1
+    elif dealer.bust:
+        print "BUST!!!! You win.",
+        player1.num_wins += 1
+        player1.pot += player1.bet
+    elif dealer.blackjack and player1.blackjack:
         print "Both you and the dealer have Blackjack.  Push.",
         player1.num_pushes += 1
     elif dealer.blackjack and not player1.blackjack:
@@ -325,6 +322,7 @@ def end_hand():
 
 def play_again(test_response = False):
     ''' Current hand has just ended, ask if player would like to continue '''
+
     if debug:
         print "(debug) %d cards left in the deck" % deck.num_cards()
 
@@ -334,23 +332,26 @@ def play_again(test_response = False):
     else:
         print "You have %d chips remaining." % player1.pot
         play_again = require_input('play_again', test_response)
-        #play_again = raw_input("----> Would you like to play again? (y/n) ")
 
         if play_again in ('y', 'Y'):
             if not debug:
                 os.system('clear') # clear screen. 'cls' for windows
             else:
                 print 80*'~'
+
             for player in players:
                 player.reset()
+
             if deck.num_cards() < 15:
                 deck.reset()
+
             return True
         else:
             return False
 
 def end_game():
     ''' Tally wins/losses.  Exit game. '''
+
     total_games = player1.num_wins + player1.num_losses + player1.num_pushes
 
     if total_games == 1:

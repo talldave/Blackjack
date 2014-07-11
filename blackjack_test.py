@@ -3,7 +3,7 @@
 import blackjack
 blackjack.debug = True
 
-def test_game():
+def test_game(round = 0):
     ''' Deal first 2 cards.  Player moves, then dealer moves, then compare hands.  '''
 
     responses = ['j',-4,20]
@@ -29,7 +29,8 @@ def test_game():
         blackjack.end_hand()
 
     if blackjack.play_again('y'):
-        test_game()
+        round += 1
+        test_game(round)
     else:
         blackjack.end_game()
 
