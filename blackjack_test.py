@@ -3,45 +3,49 @@
 import blackjack
 blackjack.debug = True
 
-def test_game(players, deck):
+def test_game():
     ''' Deal first 2 cards.  Player moves, then dealer moves, then compare hands.  '''
 
-    (player1, dealer) = players
-    blackjack.place_bet(player1)
+    responses = ['j',-4,20]
+    blackjack.place_bet([20])
 
     for i in range(2):
         for player in players:
-            player.deal_card(deck)
+            player.deal_card()
 
     for player in players:
         player.show()
 
     for player in players:
         if player.is_dealer:
-            blackjack.dealer_move(dealer, player1, deck)
+            blackjack.dealer_move()
         else:
-            blackjack.player_move(player, deck)
+            blackjack.player_move(['h','h','s'])
 
         if player.bust:
             break
 
     if not player1.bust and not dealer.bust:
-        blackjack.end_hand(player1, dealer)
+        blackjack.end_hand()
 
-    if blackjack.play_again(player1, players, deck, 'y'):
-        test_game(players, deck)
+    if blackjack.play_again('y'):
+        test_game()
     else:
-        blackjack.end_game(player1)
+        blackjack.end_game()
 
 
 
-def main():
+if __name__ == '__main__':
 
     player1 = blackjack.Player()
     dealer = blackjack.Player('Dealer')
     players = [player1, dealer]
 
-    blackjack.welcome(player1)
+    blackjack.player1 = player1
+    blackjack.dealer = dealer
+    blackjack.players = players
+
+    blackjack.welcome()
 
 # normal
     ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A')
@@ -55,12 +59,11 @@ def main():
 
     deck = blackjack.Deck(ranks,shuffle)
     deck.suspense = 0
+    blackjack.deck = deck
 
-    test_game(players, deck)
+    test_game()
 
 
 ##
 
-if __name__ == '__main__':
-    main()
 
