@@ -13,6 +13,8 @@ import os
 debug = False
 #debug = True
 
+VERSION = 1.0
+
 # # #  BEGIN CLASS # # #
 
 class Player:
@@ -112,16 +114,13 @@ class Deck:
         self.reset(ranks, shuffle)
 
     def reset(self, ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A'), shuffle = True):
-        self.ranks = ranks
-        self.do_shuffle = shuffle
-
-        self.deck = list(self.ranks * 4)
+        self.deck = list(ranks * 4)
         self.deck *= self.num_decks
 
         if debug:
             print "(debug) " + str(self.deck)
 
-        if self.do_shuffle:
+        if shuffle:
             self.shuffle()
 
         if debug:
@@ -165,7 +164,7 @@ def place_bet(test_response = [], num_response = 0):
 
     invalid_response = False
     if debug:
-        print "(debug) Expected bets: %s " % str(test_response)
+        print "(debug) Expected bet: %s " % str(test_response)
     if test_response:
         test_resp = test_response.pop(0)
     else:
@@ -307,21 +306,22 @@ def end_hand():
     ''' Compare player hand to dealer hand, and do bet math. '''
 
     print "\n#*#*#",
+
     if player1.bust:
         print "BUST! Dealer wins.",
         player1.pot -= player1.bet
         player1.num_losses += 1
     elif dealer.bust:
         print "BUST!!!! You win.",
-        player1.num_wins += 1
         player1.pot += player1.bet
+        player1.num_wins += 1
     elif dealer.blackjack and player1.blackjack:
         print "Both you and the dealer have Blackjack.  Push.",
         player1.num_pushes += 1
     elif dealer.blackjack and not player1.blackjack:
         print "Dealer has blackjack!",
-        player1.num_losses += 1
         player1.pot -= player1.bet
+        player1.num_losses += 1
     elif not dealer.blackjack and player1.blackjack:
         print "You have blackjack!!",
         player1.pot += player1.bet * 2
@@ -337,6 +337,7 @@ def end_hand():
         print "You win!",
         player1.pot += player1.bet
         player1.num_wins += 1
+
     print "#*#*#\n"
 
 def play_again(test_response = False):
