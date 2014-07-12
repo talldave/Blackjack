@@ -7,8 +7,8 @@
 
 import random
 import time
-#import curses
 import os
+#import curses
 
 debug = False
 #debug = True
@@ -53,6 +53,10 @@ class Player:
         self.cards.append(dealt_card)
         self.hand += dealt_card_value
 
+        if debug:
+            print "(debug) Dealt card: %s" % dealt_card
+            print "(debug) Dealt card value: %d" % dealt_card_value
+
     def show(self):
         print "\n%s's cards: " % self.name,
 
@@ -81,6 +85,10 @@ class Player:
             self.blackjack = True
         elif ((len(self.cards) == 2) and (self.cards[0] == self.cards[1])):
             self.pair = True
+
+        if debug:
+            print "(debug) Evaluate hand: %d" % self.hand
+            print "(debug) BUST: %s | BJ: %s | PAIR: %s" % (self.bust, self.blackjack, self.pair)
 
 
 class Deck:
@@ -155,9 +163,15 @@ def place_bet(test_response = [], num_response = 0):
     ''' Ask player to place their bet. '''
 
     invalid_response = False
+    if debug:
+        print "(debug) Expected bets: %s " % str(test_response)
+    if test_response:
+        test_resp = test_response.pop(0)
+    else:
+        test_resp = False
 
     try:
-        response = require_input('bet', test_response, num_response)
+        response = require_input('bet', test_resp)
         player1.bet = int(response)
     except ValueError:
         invalid_response = True
@@ -185,15 +199,20 @@ def play_game():
 
     for player in players:
         player.show()
+        player.evaluate_hand()
 
-    for player in players:
-        if player.is_dealer:
-            dealer_move()
-        else:
-            player_move()
+    if dealer.blackjack:
+        dealer.show()
 
-        if player.bust:
-            break
+    if not player1.blackjack and not dealer.blackjack:
+        for player in players:
+            if player.is_dealer:
+                dealer_move()
+            else:
+                player_move()
+
+            if player.bust:
+                break
 
     end_hand()
 
@@ -202,7 +221,7 @@ def play_game():
     else:
         end_game()
 
-def require_input(ask, response = [], num_response = 0):
+def require_input(ask, response = False):
     ''' Function to ask for player input.  Also allows for passed-in response for testing '''
 
     if ask == 'play_again':
@@ -219,30 +238,32 @@ def require_input(ask, response = [], num_response = 0):
         question = "\n----> How many decks would you like to play with? (1-8) "
 
     if response:
-        print question + str(response[num_response])
-        return response[num_response]
+        print question + str(response)
+        return response
     else:
         return raw_input(question)
 
-def player_move(test_response = False, num_response = 0, invalid_response = 0):
+def player_move(test_response = False, invalid_response = 0):
     ''' Ask player to hit, stand, or double-down.  Hand is lost if bust. '''
 
-    player1.evaluate_hand()
-    if player1.blackjack:
-        return
+    if debug:
+        print "(debug) Expected play: %s" % str(test_response)
+
+    if test_response:
+        test_resp = test_response.pop(0)
+    else:
+        test_resp = False
 
     if invalid_response > 3:
         print "It seems you don't understand the question.  Let's play again another time."
         end_game()
 
     if len(player1.cards) == 2 and player1.pot >= player1.bet * 2:
-        action = require_input('hit_stand_double', test_response, num_response)
+        action = require_input('hit_stand_double', test_resp)
         valid_response = ['h', 'H', 'd', 'D']
     else:
-        action = require_input('hit_stand', test_response, num_response)
+        action = require_input('hit_stand', test_resp)
         valid_response = ['h', 'H']
-
-    num_response += 1
 
     if action in valid_response:
         if action in ('d', 'D'):
@@ -257,27 +278,24 @@ def player_move(test_response = False, num_response = 0, invalid_response = 0):
         if player1.bust:
             return
         elif action in ('h', 'H'):
-            player_move(test_response, num_response)
+            player_move(test_response)
 
     elif action not in ('s', 'S'):
         invalid_response += 1
         print "'%s' is not a valid response." % action
-        player_move(test_response, num_response, invalid_response)
-
+        player_move(test_response, invalid_response)
 
 def dealer_move():
     ''' Dealer < 17, hit. 16 < Dealer < 22, stay. Dealer > 21, bust. '''
 
     dealer.show()
-    dealer.evaluate_hand()
-    if dealer.blackjack or player1.blackjack:
-        return
     print "Dealer has %s." % dealer.hand,
 
     if dealer.hand < 17:
         print "Dealer must hit."
         time.sleep(deck.suspense)
         dealer.deal_card()
+        dealer.evaluate_hand()
         dealer_move()
     elif dealer.hand < 22:
         print "Dealer stays."

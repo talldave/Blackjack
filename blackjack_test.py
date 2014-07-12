@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 import blackjack
+import pdb
 blackjack.debug = True
 
 def test_game(round = 0):
     ''' Deal first 2 cards.  Player moves, then dealer moves, then compare hands.  '''
 
-    responses = ['j',-4,20]
-    blackjack.place_bet([20])
+    responses = [5]
+    #responses = ['k',-3,435,'foo','0',888,-8,-9] # too many bad responses
+    blackjack.place_bet(responses)
 
     for i in range(2):
         for player in players:
@@ -15,20 +17,27 @@ def test_game(round = 0):
 
     for player in players:
         player.show()
+        player.evaluate_hand()
 
-    for player in players:
-        if player.is_dealer:
-            blackjack.dealer_move()
-        else:
-            blackjack.player_move(['h','h','s'])
+    if dealer.blackjack:
+        dealer.show()
 
-        if player.bust:
-            break
+    if not player1.blackjack and not dealer.blackjack:
+        for player in players:
+            if player.is_dealer:
+                blackjack.dealer_move()
+            else:
+                responses = ['h','h','s']
+                responses = ['s']
+                #responses = ['k',-3,435,'foo','0',888,-8,-9] # too many bad responses
+                blackjack.player_move(responses)
 
-    if not player1.bust and not dealer.bust:
-        blackjack.end_hand()
+            if player.bust:
+                break
 
-    if blackjack.play_again('y'):
+    blackjack.end_hand()
+
+    if blackjack.play_again():
         round += 1
         test_game(round)
     else:
@@ -37,6 +46,8 @@ def test_game(round = 0):
 
 
 if __name__ == '__main__':
+
+    #pdb.set_trace()
 
     player1 = blackjack.Player()
     dealer = blackjack.Player('Dealer')
@@ -57,6 +68,9 @@ if __name__ == '__main__':
 # dealer has blackjack
     #ranks = (2,'K','Q',9,'A',8,8,8,8,8,8,8,8)
     #shuffle = False
+# both player and dealer have blackjack
+    ranks = (2,'K','Q','A','A',8,8,8,8,8,8,8,8)
+    shuffle = False
 
     deck = blackjack.Deck(ranks,shuffle)
     deck.suspense = 0
