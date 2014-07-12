@@ -122,9 +122,8 @@ class Deck:
 
         if shuffle:
             self.shuffle()
-
-        if debug:
-            print "(debug) " + str(self.deck)
+            if debug:
+                print "(debug) " + str(self.deck)
 
         self.deck.pop(0) # burn card
 
