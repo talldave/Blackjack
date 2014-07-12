@@ -108,12 +108,13 @@ class Deck:
             print "You will be playing with %d decks.  Good luck!" % deck_count
 
         self.suspense = 2  # number of seconds to sleep before card is dealt. try 0, 1 or 2
+        self.num_decks = deck_count
+        self.reset(ranks, shuffle)
+
+    def reset(self, ranks = (2,3,4,5,6,7,8,9,10,'J','Q','K','A'), shuffle = True):
         self.ranks = ranks
         self.do_shuffle = shuffle
-        self.num_decks = deck_count
-        self.reset()
 
-    def reset(self):
         self.deck = list(self.ranks * 4)
         self.deck *= self.num_decks
 
