@@ -20,8 +20,13 @@ def test_game(round = 0):
     ''' Deal first 2 cards.  Player moves, then dealer moves, then compare hands.  '''
 
     print "(debug) ROUND: %d" % round
-    bet_resp = [5]
-    player_resp = ['s']
+
+    if round < 21:
+        bet_resp = [5]
+        player_resp = ['s']
+    else:
+        bet_resp = False
+        player_resp = False
 
     if round == 0:
         print "(debug)", 40*"*"
@@ -92,9 +97,8 @@ def test_game(round = 0):
         ranks = (2,8,8,9,8,3,4,8,8,8,8,8,8)
         shuffle = False
         blackjack.deck.reset(ranks,shuffle)
-    elif round > 20:
-        player_resp = False
-        bet_resp = False
+    elif round == 9:
+        blackjack.deck.reset()
 
 
     #bet_resp = ['k',-3,435,'foo','0',888,-8,-9] # too many bad responses
